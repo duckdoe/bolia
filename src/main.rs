@@ -1,9 +1,7 @@
 mod ui;
 
-use ui::panels::Panel;
 use macroquad::prelude::*;
-
-use crate::ui::panels::Alignment;
+use crate::ui::layout::{Alignment, Element, Rectangle, Row};
 
 fn window_conf() -> Conf {
     Conf {
@@ -13,22 +11,25 @@ fn window_conf() -> Conf {
     }
 }
 
-fn build_ui () {
-    let left_panel = Panel::new(Alignment::TopLeft, 250.0, screen_height(), BLACK);
-    let right_panel = Panel::new(Alignment::TopRight, 250.0, screen_height(), BLACK);
-    let center_panel = Panel::new(Alignment::Center(screen_height() - 80.0), 100.0, 50.0, BLACK);
 
-    left_panel.draw_panel();
-    right_panel.draw_panel();
-    center_panel.draw_panel();
-}
 #[macroquad::main(window_conf)]
 async fn main() {
+
+    let mut row = Row::new();
+    let rect = Rectangle::new(20.0, 20.0, None);
+    let bigger_rect = Rectangle::new(40.0, 40.0, None);
+
+    row.child(Element::Rect(rect))
+       .gap(10.0)
+       .child(Element::Rect(bigger_rect))
+       .child(Element::Rect(rect.clone()))
+       .align(Alignment::Center);
 
     loop {
         clear_background(WHITE);
 
-        build_ui();
+
+        row.draw(screen_width()/2.0, screen_height()/2.0);
         next_frame().await;
     }
 }
