@@ -1,20 +1,23 @@
-use macroquad::math::Rect;
+use macroquad::{color::*, shapes::draw_rectangle};
 
-enum Element {
+#[derive(Debug)]
+pub enum Element {
     Rect(Rectangle),
     Row(Row),
 }
 
+#[derive(Debug)]
 enum Alignment {
     Left,   /* Also means the same as alignment up */
     Right,  /* Also means the same alignment down */
     Center, /* Means exactly what the word says */
 }
 
-#[derive(Debug)]
-struct Rectangle {
+#[derive(Debug, Clone, Copy)]
+pub struct Rectangle {
     w: f32,
     h: f32,
+    color: Color,
 }
 
 #[derive(Debug)]
@@ -26,6 +29,20 @@ pub struct Row {
     gap: f32,
     alignment: Alignment,
     children: Vec<Element>,
+}
+
+impl Rectangle {
+    pub fn new(w: f32, h: f32, color: Option<Color>) -> Self {
+        if let Some(color) = color {
+            Self { w, h, color }
+        } else {
+            Self { w, h, color: BLACK }
+        }
+    }
+
+    pub fn draw(&self, x: f32, y: f32) {
+        draw_rectangle(x, y, self.w, self.h, self.color);
+    }
 }
 
 impl Row {
@@ -58,7 +75,7 @@ impl Row {
         }
     }
 
-    fn get_final_row_dimensions(&mut self) -> (f32, f32) {
+    fn get_final_row_dimensions(&self) -> (f32, f32) {
         let mut width = 0.0;
         let mut height = 0.0;
         let mut index = 0;
@@ -76,8 +93,6 @@ impl Row {
             index += 1;
         }
 
-        self.w = width;
-        self.h = height;
         (width, height)
     }
 
@@ -91,22 +106,26 @@ impl Row {
         self
     }
 
-    pub fn draw(&self) -> (f32, f32) {
-        let mut x = self.x;
-        let mut y = self.y;
+    pub fn draw(&self, x: f32, y: f32) -> (f32, f32) {
+        let mut x = x; // We only move the x axis forward for now
+        let _y = y;
 
         for child in &self.children {
             match child {
                 Element::Rect(rect) => {
-                    /* Call rect drawing function, and also properly calculate the x */
-                    println!("{rect:?}");
-                }
+                    let w = rect.w;
+                    rect.draw(x, y);
 
+                    x += w + self.gap;
+                }
                 Element::Row(row) => {
-                    /* Call row drawing function, and also properly calculate the x */
-                    println!("{row:?}");
+                    row.draw(x, y);
+                    let (w, _) = row.get_final_row_dimensions();
+                    x += w + self.gap;
                 }
             }
+
+            println!("next element x coords = {x}");
         }
 
         (self.w, self.h)
