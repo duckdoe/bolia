@@ -1,25 +1,9 @@
-use macroquad::{color::*, shapes::draw_rectangle};
-
-pub trait Element {
-    fn size(&self) -> Size;
-    fn draw(&self, x: f32, y: f32);
-}
+use crate::ui::element::{Element, Size};
 
 pub enum Alignment {
     Left,   /* Also means the same as alignment up */
     Right,  /* Also means the same alignment down */
     Center, /* Means exactly what the word says */
-}
-
-pub struct Size {
-    w: f32,
-    h: f32,
-}
-
-pub struct Rectangle {
-    w: f32,
-    h: f32,
-    color: Color,
 }
 
 pub struct Row<'a> {
@@ -40,21 +24,6 @@ pub struct Column<'a> {
     gap: f32,
     alignment: Alignment,
     children: Vec<&'a dyn Element>,
-}
-
-impl Size {
-    pub fn new(w: f32, h: f32) -> Self {
-        Self { w, h }
-    }
-}
-
-impl Element for Rectangle {
-    fn size(&self) -> Size {
-        Size::new(self.w, self.h)
-    }
-    fn draw(&self, x: f32, y: f32) {
-        draw_rectangle(x, y, self.w, self.h, self.color);
-    }
 }
 
 impl Element for Row<'_> {
@@ -86,16 +55,6 @@ impl Element for Column<'_> {
         for child in &self.children {
             child.draw(x, y);
             y += child.size().h + self.gap;
-        }
-    }
-}
-
-impl Rectangle {
-    pub fn new(w: f32, h: f32, color: Option<Color>) -> Self {
-        if let Some(color) = color {
-            Self { w, h, color }
-        } else {
-            Self { w, h, color: BLACK }
         }
     }
 }
