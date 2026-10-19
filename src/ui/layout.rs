@@ -81,10 +81,10 @@ impl Row {
     }
 
     fn get_final_row_dimensions(&self) -> (f32, f32) {
-        let mut width = 0.0;
+        let len = self.children.len();
+        let mut width = (len - 1) as f32 * self.gap;
         let mut height = 0.0;
         let mut index = 0;
-        let len = self.children.len();
 
         while index < len {
             let child = &self.children[index];
@@ -118,6 +118,9 @@ impl Row {
                         let half_of_row_height = self.h / 2.0;
 
                         offset = half_of_row_height - half_of_el;
+                        //                        println!("Half of Rect: {half_of_el}");
+                        //                       println!("Half of row: {half_of_row_height}");
+                        //                       println!("Rect Offset: {offset}");
                     }
                     Alignment::Right => {
                         offset = self.h - rect.h;
@@ -223,16 +226,16 @@ impl Column {
     }
 
     fn get_final_column_dimensions(&self) -> (f32, f32) {
-        let mut width = 0.0;
-        let mut height = 0.0;
-        let mut index = 0;
         let len = self.children.len();
+        let mut width = 0.0;
+        let mut height = (len - 1) as f32 * self.gap;
+        let mut index = 0;
 
         while index < len {
             let child = &self.children[index];
             let child_dimensions = calculate_dimensions(child);
 
-            height += child_dimensions.0 + self.gap;
+            height += child_dimensions.0;
             if child_dimensions.1 > width {
                 width = child_dimensions.1;
             }

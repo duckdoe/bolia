@@ -29,7 +29,7 @@ async fn main() {
        .child(Element::Rect(rect.clone()))
        .align(Alignment::Center);
 
-    row.child(Element::Column(col));
+    row.child(Element::Column(col)).align(Alignment::Center).gap(10.0);
 
     loop {
         clear_background(WHITE);
