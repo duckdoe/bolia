@@ -178,18 +178,19 @@ impl Row {
                     let y = y + self.get_align_offset(&Element::Rect(rect.clone()));
                     rect.draw(x, y);
 
-                    let w = rect.w;
-                    x += w + self.gap;
+                    x += rect.w + self.gap;
                 }
                 Element::Row(row) => {
                     let y = y + self.get_align_offset(&Element::Row(row.clone()));
                     row.draw(x, y);
 
-                    let (w, _) = row.get_final_row_dimensions();
-                    x += w + self.gap;
+                    x += row.w + self.gap;
                 }
-                _ => {
-                    eprintln!("Not implemented yet")
+                Element::Column(col) => {
+                    let y = y + self.get_align_offset(&Element::Column(col.clone()));
+                    col.draw(x, y);
+
+                    x += col.w + self.gap;
                 }
             }
         }
@@ -260,9 +261,8 @@ impl Column {
                 match self.alignment {
                     Alignment::Left => offset = self.x,
                     Alignment::Center => {
-                        let (row_width, _) = self.get_final_column_dimensions();
                         let half_of_el = rect.w / 2.0;
-                        let half_of_row_width = row_width / 2.0;
+                        let half_of_row_width = self.w / 2.0;
 
                         offset = half_of_row_width - half_of_el;
                     }
@@ -280,15 +280,13 @@ impl Column {
                 match self.alignment {
                     Alignment::Left => offset = self.x,
                     Alignment::Center => {
-                        let (self_width, _) = self.get_final_column_dimensions();
-                        let half_of_el = row.get_final_row_dimensions().0 / 2.0;
-                        let half_of_row_width = self_width / 2.0;
+                        let half_of_el = row.w / 2.0;
+                        let half_of_row_width = self.w / 2.0;
 
                         offset = half_of_row_width - half_of_el;
                     }
                     Alignment::Right => {
-                        let (column_width, _) = self.get_final_column_dimensions();
-                        offset = column_width - row.get_final_row_dimensions().0;
+                        offset = self.w - row.w;
                     }
                 }
                 return offset;
