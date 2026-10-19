@@ -233,7 +233,7 @@ impl Column {
             let child_dimensions = calculate_dimensions(child);
 
             height += child_dimensions.0 + self.gap;
-            if child_dimensions.1 > height {
+            if child_dimensions.1 > width {
                 width = child_dimensions.1;
             }
 
@@ -267,8 +267,7 @@ impl Column {
                         offset = half_of_row_width - half_of_el;
                     }
                     Alignment::Right => {
-                        let (row_width, _) = self.get_final_column_dimensions();
-                        offset = row_width - rect.w;
+                        offset = self.w - rect.w;
                     }
                 }
                 return offset;
