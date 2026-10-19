@@ -4,6 +4,7 @@ use macroquad::{color::*, shapes::draw_rectangle};
 pub enum Element {
     Rect(Rectangle),
     Row(Row),
+    Column(Column),
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -22,6 +23,17 @@ pub struct Rectangle {
 
 #[derive(Debug, Clone)]
 pub struct Row {
+    x: f32,
+    y: f32,
+    w: f32,
+    h: f32,
+    gap: f32,
+    alignment: Alignment,
+    children: Vec<Element>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Column {
     x: f32,
     y: f32,
     w: f32,
@@ -102,15 +114,13 @@ impl Row {
                 match self.alignment {
                     Alignment::Left => offset = self.y,
                     Alignment::Center => {
-                        let (_, row_height) = self.get_final_row_dimensions();
                         let half_of_el = rect.h / 2.0;
-                        let half_of_row_height = row_height / 2.0;
+                        let half_of_row_height = self.h / 2.0;
 
                         offset = half_of_row_height - half_of_el;
                     }
                     Alignment::Right => {
-                        let (_, row_height) = self.get_final_row_dimensions();
-                        offset = row_height - rect.h;
+                        offset = self.h - rect.h;
                     }
                 }
                 return offset;
@@ -122,15 +132,30 @@ impl Row {
                 match self.alignment {
                     Alignment::Left => offset = self.y,
                     Alignment::Center => {
-                        let (_, self_height) = self.get_final_row_dimensions();
-                        let half_of_el = row.get_final_row_dimensions().1 / 2.0;
-                        let half_of_row_height = self_height / 2.0;
+                        let half_of_el = row.h / 2.0;
+                        let half_of_row_height = self.h / 2.0;
 
-                        offset = half_of_row_height + half_of_el;
+                        offset = half_of_row_height - half_of_el;
                     }
                     Alignment::Right => {
-                        let (_, row_height) = self.get_final_row_dimensions();
-                        offset = row_height - row.get_final_row_dimensions().1;
+                        offset = self.h - row.h;
+                    }
+                }
+                return offset;
+            }
+
+            Element::Column(col) => {
+                let offset: f32;
+                match self.alignment {
+                    Alignment::Left => offset = self.y,
+                    Alignment::Center => {
+                        let half_of_el = col.h / 2.0;
+                        let half_of_row_height = self.h / 2.0;
+
+                        offset = half_of_row_height - half_of_el;
+                    }
+                    Alignment::Right => {
+                        offset = self.h - col.h;
                     }
                 }
                 return offset;
@@ -163,9 +188,158 @@ impl Row {
                     let (w, _) = row.get_final_row_dimensions();
                     x += w + self.gap;
                 }
+                _ => {
+                    eprintln!("Not implemented yet")
+                }
+            }
+        }
+
+        (self.w, self.h)
+    }
+}
+
+impl Column {
+    pub fn new() -> Self {
+        Self {
+            x: 0.0,
+            y: 0.0,
+            w: 0.0,
+            h: 0.0,
+            gap: 0.0,
+            alignment: Alignment::Left,
+            children: vec![],
+        }
+    }
+
+    pub fn align(&mut self, alignment: Alignment) -> &mut Self {
+        self.alignment = alignment;
+        self
+    }
+
+    pub fn gap(&mut self, gap: f32) -> &mut Self {
+        self.gap = gap;
+        self
+    }
+
+    fn get_final_column_dimensions(&self) -> (f32, f32) {
+        let mut width = 0.0;
+        let mut height = 0.0;
+        let mut index = 0;
+        let len = self.children.len();
+
+        while index < len {
+            let child = &self.children[index];
+            let child_dimensions = calculate_dimensions(child);
+
+            height += child_dimensions.0 + self.gap;
+            if child_dimensions.1 > height {
+                width = child_dimensions.1;
             }
 
-            println!("next element x coords = {x}");
+            index += 1;
+        }
+
+        (width, height)
+    }
+
+    pub fn child(&mut self, element: Element) -> &mut Self {
+        self.children.push(element); /* add child then calc new dimensions */
+
+        let (width, height) = self.get_final_column_dimensions();
+        self.w = width;
+        self.h = height;
+
+        self
+    }
+
+    fn get_align_offset(&self, element: &Element) -> f32 {
+        // Gives it an y offset because that's all we need
+        match element {
+            Element::Rect(rect) => {
+                let offset: f32;
+                match self.alignment {
+                    Alignment::Left => offset = self.x,
+                    Alignment::Center => {
+                        let (row_width, _) = self.get_final_column_dimensions();
+                        let half_of_el = rect.w / 2.0;
+                        let half_of_row_width = row_width / 2.0;
+
+                        offset = half_of_row_width - half_of_el;
+                    }
+                    Alignment::Right => {
+                        let (row_width, _) = self.get_final_column_dimensions();
+                        offset = row_width - rect.w;
+                    }
+                }
+                return offset;
+            }
+
+            Element::Row(row) => {
+                let offset: f32;
+
+                match self.alignment {
+                    Alignment::Left => offset = self.x,
+                    Alignment::Center => {
+                        let (self_width, _) = self.get_final_column_dimensions();
+                        let half_of_el = row.get_final_row_dimensions().0 / 2.0;
+                        let half_of_row_width = self_width / 2.0;
+
+                        offset = half_of_row_width - half_of_el;
+                    }
+                    Alignment::Right => {
+                        let (column_width, _) = self.get_final_column_dimensions();
+                        offset = column_width - row.get_final_row_dimensions().0;
+                    }
+                }
+                return offset;
+            }
+
+            Element::Column(col) => {
+                let offset: f32;
+
+                match self.alignment {
+                    Alignment::Left => offset = self.x,
+                    Alignment::Center => {
+                        let half_of_el = col.w / 2.0;
+                        let half_of_col_width = self.w / 2.0;
+
+                        offset = half_of_col_width - half_of_el;
+                    }
+                    Alignment::Right => {
+                        offset = self.w - col.w;
+                    }
+                }
+
+                return offset;
+            }
+        }
+    }
+
+    pub fn draw(&self, x: f32, y: f32) -> (f32, f32) {
+        let x = x; // We only move the x axis forward for now
+        let mut y = y;
+
+        for child in &self.children {
+            match child {
+                Element::Rect(rect) => {
+                    let x = x + self.get_align_offset(&Element::Rect(rect.clone()));
+                    rect.draw(x, y);
+
+                    y += rect.h + self.gap;
+                }
+                Element::Row(row) => {
+                    let x = x + self.get_align_offset(&Element::Row(row.clone()));
+                    row.draw(x, y);
+
+                    y += row.h + self.gap;
+                }
+                Element::Column(col) => {
+                    let x = x + self.get_align_offset(&Element::Column(col.clone()));
+                    col.draw(x, y);
+
+                    y += col.h + self.gap;
+                }
+            }
         }
 
         (self.w, self.h)
@@ -176,5 +350,6 @@ fn calculate_dimensions(element: &Element) -> (f32, f32) {
     match element {
         Element::Rect(r) => (r.w, r.h),
         Element::Row(row) => (row.w, row.h),
+        Element::Column(col) => (col.w, col.h),
     }
 }
