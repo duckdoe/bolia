@@ -66,7 +66,8 @@ impl Canvas<'_> {
         let ctx_x = ctx_origin.0;
         let ctx_y = ctx_origin.1;
 
-        let screen_coords = (x - (ctx_x - xy.0), y - (ctx_y - xy.1));
+        let screen_coords = (x - (ctx_x - xy.0), y - (ctx_y - xy.1)); // Translation: canvas_origin_x - (context_x - passed_in_x)
+                                                                      // canvas_origin_y - (context_y - passed_in_y)
         screen_coords
     }
 
@@ -74,12 +75,35 @@ impl Canvas<'_> {
         self.x = x;
         self.y = y;
         self.origin = generate_origin(x, y, self.w, self.h);
+
+        let coords = Coords {
+            x1: x,
+            y1: x,
+            x2: self.w,
+            y2: self.h,
+        };
+        self.coords = coords;
     }
 
     pub fn update_dimensions(&mut self, w: f32, h: f32) {
         self.w = w;
         self.h = h;
         self.origin = generate_origin(self.x, self.y, self.w, self.h);
+
+        let coords = Coords {
+            x1: self.x,
+            y1: self.y,
+            x2: w,
+            y2: h,
+        };
+        let ctx_coords = Coords {
+            x1: -(w / 2.0),
+            y1: h / 2.0,
+            x2: w / 2.0,
+            y2: -(h / 2.0),
+        };
+        self.coords = coords;
+        self.context.coords = ctx_coords;
     }
 }
 
@@ -96,7 +120,7 @@ fn generate_origin(x: f32, y: f32, w: f32, h: f32) -> (f32, f32) {
 #[test]
 fn test_get_screen_coords_from_context() {
     let canvas = Canvas::new(1420.0, 720.0);
-    let (x, y) = canvas.get_screen_coords_from_context((0.0, 0.0));
+    let (x, y) = canvas.get_screen_coords_from_context((-1.0, 0.0));
 
     assert_eq!((710.0, 360.0), (x, y));
 }
