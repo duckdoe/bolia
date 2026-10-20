@@ -14,6 +14,9 @@ fn window_conf() -> Conf {
 async fn main() {
     loop {
         clear_background(WHITE);
+        draw_rectangle(0.0, 0.0, 250.0, screen_height(), BLACK);
+        // draw_rectangle(screen_width() - 250.0, 0.0, 250.0, screen_height(), BLACK);
+        draw_rectangle(1085.0, 0.0, 250.0, 250.0, BLACK);
         next_frame().await;
     }
 }

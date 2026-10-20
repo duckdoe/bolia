@@ -3,6 +3,8 @@ use macroquad::{
     shapes::draw_rectangle,
 };
 
+use crate::ui::canvas::Canvas;
+
 pub struct Size {
     pub w: f32,
     pub h: f32,
@@ -31,6 +33,18 @@ impl Element for Rectangle {
     }
     fn draw(&self, x: f32, y: f32) {
         draw_rectangle(x, y, self.w, self.h, self.color);
+    }
+}
+
+impl Element for Canvas<'_> {
+    fn size(&self) -> Size {
+        Size::new(self.w, self.h)
+    }
+
+    fn draw(&self, x: f32, y: f32) {
+        for object in &self.context.objects {
+            object.draw();
+        }
     }
 }
 
