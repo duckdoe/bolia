@@ -1,3 +1,6 @@
+// TODO: Work on getting drawings
+// TODO: Write more tests
+
 pub trait CanvasObject {
     fn draw(&self) {}
 }

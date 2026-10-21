@@ -12,11 +12,15 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
+    let font = load_ttf_font("/home/fortune/programming/duckdoe/bolia/assets/font/Coolvetica Rg.otf")
+        .await
+        .unwrap();
+
+    set_default_font(font);
+
     loop {
         clear_background(WHITE);
-        draw_rectangle(0.0, 0.0, 250.0, screen_height(), BLACK);
-        // draw_rectangle(screen_width() - 250.0, 0.0, 250.0, screen_height(), BLACK);
-        draw_rectangle(1085.0, 0.0, 250.0, 250.0, BLACK);
+        draw_text("Hello coolvetica", 500.0, 500.0, 14.0, BLACK);
         next_frame().await;
     }
 }
