@@ -1,9 +1,7 @@
 // TODO: Work on getting drawings
 // TODO: Write more tests
 
-pub trait CanvasObject {
-    fn draw(&self) {}
-}
+use crate::viewport::object::CanvasObject;
 
 pub struct Coords {
     x1: f32,
@@ -61,7 +59,7 @@ impl Canvas<'_> {
         }
     }
 
-    fn get_screen_coords_from_context(&self, xy: (f32, f32)) -> (f32, f32) {
+    pub fn get_screen_coords_from_context(&self, xy: (f32, f32)) -> (f32, f32) {
         let x = self.origin.0;
         let y = self.origin.1;
 
@@ -118,6 +116,12 @@ fn generate_origin(x: f32, y: f32, w: f32, h: f32) -> (f32, f32) {
     let y = (h / 2.0) + y;
 
     (x, y)
+}
+
+impl<'a> Context<'a> {
+    pub fn add_object(&mut self, object: &'a dyn CanvasObject) {
+        self.objects.push(object);
+    }
 }
 
 #[test]

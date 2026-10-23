@@ -4,7 +4,8 @@ use macroquad::{
     text::{draw_text, get_default_font, measure_text},
 };
 
-use crate::ui::{canvas::Canvas, text::Text};
+use crate::ui::text::Text;
+use crate::viewport::canvas::Canvas;
 
 pub struct Size {
     pub w: f32,
@@ -55,9 +56,11 @@ impl Element for Canvas<'_> {
         Size::new(self.w, self.h)
     }
 
-    fn draw(&self, _x: f32, y: f32) {
+    fn draw(&self, _x: f32, _y: f32) {
         for object in &self.context.objects {
-            object.draw();
+            let object_pos = object.get_pos();
+            let (x, y) = self.get_screen_coords_from_context((object_pos.x, object_pos.y));
+            object.draw(x, y);
         }
     }
 }
